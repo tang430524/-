@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.gy.mapper.Class_hourMapper">
+		
+	<!-- <cache type="com.yc.dao.redis.cache.RedisCache"></cache> -->
+	
+	<cache eviction="FIFO" flushInterval="60000" size="512" readOnly="true"></cache>
+	
+	<select id="findcourseseq" resultType="Class_hour"  parameterType="Class_hour">
+		select * from class_hour where course_id=#{course.course_id} order by class_hour_id desc
+	</select>
+	
+	<insert id="addlession" parameterType="Class_hour" useGeneratedKeys="true" keyProperty="Class_hour_id"> 
+		insert into class_hour(course_id,type,title,introduction,courseseq,content)
+			values
+		 (#{course.course_id},#{type},#{title},#{introduction},#{courseseq},#{content})
+	</insert>
+	
+	<select id="findAllcourseseq" resultType="Class_hour"  parameterType="Class_hour">
+		select * from class_hour where course_id=#{course.course_id}
+	</select>
+	
+	 <delete id="deletelesson" parameterType="int">
+		delete from class_hour where courseseq=#{courseseq} and course_id=#{course.course_id}
+	</delete>
+<!-- 		//当前课时 和//下一课时 -->
+	<select id="findNowclasshour" resultType="Class_hour"  parameterType="Class_hour">
+	select * from class_hour where courseseq >= (
+		select courseseq from class_hour 
+			where class_hour_id=#{class_hour_id} GROUP BY class_hour_id
+	) and course_id=#{course.course_id} order by courseseq  limit 2;
+	</select>
+	
+</mapper>
+
+

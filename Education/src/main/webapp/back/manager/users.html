@@ -1,0 +1,299 @@
+<table id="users_data"></table>  
+<div id="add_users" style="font-size:16px;" class="easyui-dialog" title="添加会员/修改会员" data-options="iconCls:'icon-add',resizable:true,model:true,closed:true,fit:true">
+	<br />
+	<form action="" id="uploadForm">
+		<div style="padding-left:50px;float:left;">
+			<input type="hidden" id="user_id" name="user_id"/>
+			<label>会员名称：</label><input type="text" id="user_name" name="user_name" required="required" /> <br /><br /><br />
+			<label>会员密码：</label><input type="password" id="password" name="password" required="required" /> <br /><br /><br />
+			<label>电子邮件：</label><input type="text" id="email" name="email" required="required" /> <br /><br /><br />
+			<label>性 &nbsp; &nbsp;&nbsp;别：</label><input type="radio" id="sex01" name="sex" checked="checked" value="男"/>男 <input type="radio" id="sex01" name="sex" value="女"/>女<br /><br /><br />
+			<label>个性签名：</label><input  type="text" Style="width:400px;" id="usign" name="usign" required="required"><br /><br /><br />
+			<div><label >自我介绍：</label></div><textarea id="introduce" name="introduce" Style="width:400px;height:200px;" rows="" cols=""></textarea><br /><br /><br /><br />
+		</div>
+		
+		<div class="container" id="addphoto"  style="float:right;margin-right: 300px;">
+		  <div id="addimg" class="imageBox" style=" url(&quot;http://www.17sucai.com/preview/1/2015-03-19/%E4%B8%8A%E4%BC%A0%E6%88%AA%E5%9B%BE/images/avatar.jpg&quot;); background-size: 658px 851px; background-position: -129px -225.5px; background-repeat: no-repeat;"float:right;">
+		    <div class="thumbBox"></div>
+		    <div class="spinner" style="display: none;">Loading...</div>
+		  </div>
+			  <div class="action"> 
+			    <div class="new-contentarea tc"> <a href="javascript:void(0)" class="upload-img">
+			      <label for="pdf">上传头像</label>
+			      </a>
+			      <input type="file" name="pdf" id="pdf"/>
+			    </div>
+			    <input type="button" id="btnCrop" class="Btnsty_peyton" value="裁切">
+			    <input type="button" id="btnZoomIn" class="Btnsty_peyton" value="+">
+			    <input type="button" id="btnZoomOut" class="Btnsty_peyton" value="-">
+			  </div>
+	  		<div class="cropped"></div>
+		</div><br/><br/><br/><br/>
+		<input type="button" style="width:200px;height:50px;mrgin-right:500px;" class="easyui-linkbutton" value="添加会员" onclick="addUsersInfo()"/>&nbsp;&nbsp;&nbsp;
+		<input type="button" style="width:200px;height:50px;mrgin-right:500px;" class="easyui-linkbutton" value="修改会员" onclick="editUsersInfo()"/>
+	
+	</form>
+</div>
+
+<style type="text/css">
+	
+</style>
+<script>
+$('#users_data').datagrid({  
+    url:'userinfo/findall',  
+	fitColumns:true,//true将自动扩展/收缩columns大小适应grid的宽度,防止水平滚动.
+	striped:true,//显示条纹所在行
+	loadMsg:"数据加载中...",//当从远程服务器加载数据的时候,显示的提示消息.
+	pagination:true,//分页
+	fit:true,//满屏
+	pageNumber:1,//初始页码
+	pageSize:5,//分页大小
+	rownumbers: true,//显示序号
+	sortOrder: 'asc',//排序方式
+	pageList:[5,10,20,30,40,50],//设置属性
+	sortName:'user_id',//定义那个列可以排序.
+	nowrap : true,//超出宽度自动截取
+	remoteSort : false,//前段排序而非服务器排序
+    columns:[[ 
+		{field:'user_ids',title:'',width:60,align:'center',checkbox:true}, 
+        {field:'user_id',title:'会员编号',width:80,align:'center',sortable:true},  
+        {field:'user_name',title:'会员名称',width:80,align:'center'},
+        {field:'email',title:'电子邮件',width:150,align:'center'},
+        {field:'sex',title:'性别',width:50,align:'center'},
+        {field:'pic',title:'个人头像',width:100,align:'center',
+        	formatter: function(value,row,index){
+				if(value!=null){
+					return "<img src='"+value+"' style='width='60px' height='60px'/>";
+				}else{
+					return;
+				}
+			}},
+        {field:'status',title:'状态',width:80,align:'center'},
+        {field:'tel',title:'电话',width:80,align:'center'},
+        {field:'qq',title:'qq',width:80,align:'center'},
+        {field:'time',title:'注册时间',width:80,align:'center'},
+    ]],
+    toolbar:[{
+		text:"添加",
+		iconCls:"icon-add",
+		handler:function(){
+			$('#add_users').dialog('open'); 
+			$("#addphoto").show();
+		}
+	},{
+		text:"修改",
+		iconCls:"icon-edit",
+		handler:function(){
+			$('#add_users').dialog('open'); 
+			$("#addphoto").show();
+			var rows=$('#users_data').datagrid("getChecked")[0];
+			if(rows!=undefined){
+				 var user_id=rows.user_id;
+				 var user_name=rows.user_name;
+				 var email=rows.email;
+				 var password=rows.password;
+				 var sex=rows.sex;
+				 var pic=rows.pic;
+				 var usign=rows.usign;
+				 var status=rows.status;
+				 var introduce=rows.introduce;
+				$('#add_users').dialog('open');
+				$("#user_id").val(user_id);
+				$("#user_name").val(user_name);
+				$("#password").val(password);
+				$("#email").val(email);
+				if(sex == "男"){
+					$("#sex01").attr("checked",'checked');
+				}else{
+					$("#sex02").attr("checked",'checked');
+				}
+				 
+				$("#usign").val(usign);
+				$("#introduce").val(introduce);
+				$('.cropped').append('<img id="pdf" src="'+pic+'" style="width:200px;height:200px;margin-top:4px;box-shadow:0px 0px 12px #7E7E7E;" >');
+			}else{
+				$.messager.show({
+					title:'错误提示',
+					msg:'请选中您要修改的数据...',
+					timeout:2000,
+					showType:'slide'
+				});
+			}
+			
+		}
+	},{
+		text:"删除",
+		iconCls:"icon-remove",
+		handler:function(){
+			var rows=$('#users_data').datagrid("getChecked");
+			if(rows!=null  && rows!=""){
+				 $.messager.confirm('信息确认','您确认要删除选定的数据吗？',function(rs){
+						if(rs){
+							if(rows.length==1){
+								var user_id=rows[0].user_id;
+								$.post("admin/delUserInfo",{user_id:user_id},function(data){
+									if(data>0){
+										$.messager.show({
+											title:'成功提示',
+											msg:'会员删除成功',
+											timeout:2000,
+											showType:'slide'
+										});
+										obj.datagrid("reload");//刷新表格
+										$('#users_data').datagrid("reload");
+									}else{	
+										$.messager.alert('失败提示','会员删除失败','error');
+									}
+								});
+							}else{
+									var user_ids="";
+									alert(2342);
+									for(var i=0;i<rows.length;i++){
+										user_ids+=rows[i].user_id+",";
+									}
+									//发请求到数据库删除
+									$.post("admin/delUserInfos",{user_ids:user_ids},function(data){
+										if(data>0){
+											$.messager.show({
+												title:'成功提示',
+												msg:'会员删除成功',
+												timeout:2000,
+												showType:'slide'
+											});
+											rows=null;
+											obj.datagrid("reload");//刷新表格
+											$('#users_data').datagrid("reload");
+										}else{	
+											$.messager.alert('失败提示','会员删除失败','error');
+										}
+									});
+								 }
+								}else{
+							return;
+						}
+					});
+			}else{
+				$.messager.show({
+					title:'成功提示',
+					msg:'请选中您要删除的数据...',
+					timeout:2000,
+					showType:'slide'
+				});
+			}
+		}
+	}
+	]
+}); 
+
+function addUsersInfo(){
+	var formData = new FormData(  $( "#uploadForm" )[0] );
+	$.ajax({
+		 	url:"admin/addUserInfo.action",
+		 	data:formData,
+		 	type: 'POST',
+		 	dataType:"json",
+	        cache: false,  
+	        contentType: false,  
+	        processData: false,  
+		 	success:function(data,status){
+			 	if(data){
+			 		$.messager.show({title:'成功提示',msg:"会员添加成功...",timeout:2000,showType:'slide'});
+			 		$("#users_uname").val("");
+					$("#users_pwd").val("");
+					$("#users_email").val("");
+					$("#users_usign").val("");
+					$("#users_introdution").val("");
+					$('#addimg').cropbox(options);
+					$('.cropped').html("");
+					$('#users_data').datagrid("reload");//数据重新加载
+					$("#add_users").dialog('close');//关闭添加新闻页面
+			 	}else{
+			 		$.messager.alert("错误提示","会员添加失败...\n","error");
+			 	}
+		 	}
+   	});
+	}
+function editUsersInfo(){
+	
+	var formData = new FormData($( "#uploadForm" )[0]);
+	$.ajax({
+	 	url:"admin/editUserInfo.action",
+	 	data:formData,
+	 	type: 'POST',
+	 	dataType:"json",
+	 	async: false,  
+        cache: false,  
+        contentType: false,  
+        processData: false,  
+	 	success:function(data,status){
+		 	if(data){
+		 		$.messager.show({title:'成功提示',msg:"会员修改成功...",timeout:2000,showType:'slide'});
+		 		$("#users_uname").val("");
+				$("#users_pwd").val("");
+				$("#users_email").val("");
+				$("#users_usign").val("");
+				$("#users_introdution").val("");
+				$('#addimg').cropbox(options);
+				$('.cropped').html("");
+				$('#users_data').datagrid("reload");//数据重新加载
+				$("#add_users").dialog('close');//关闭添加新闻页面
+		 	}else{
+		 		$.messager.alert("错误提示","会员修改失败...\n","error");
+		 	}
+	 	}
+	});
+}
+//第一个编辑器
+var options =
+{
+	thumbBox: '.thumbBox',
+	spinner: '.spinner',
+	imgSrc: 'images/avatar.jpg'
+}
+var cropper = $('.imageBox').cropbox(options);
+$('#pdf').on('change', function(){
+	var reader = new FileReader();
+		reader.onload = function(e) {
+		options.imgSrc = e.target.result;
+		cropper = $('#addimg').cropbox(options);
+	}
+	reader.readAsDataURL(this.files[0]);
+	this.files = [];
+})
+
+$('#btnCrop').on('click', function(){
+	var img = cropper.getDataURL();
+	$('.cropped').html("");
+	$('.cropped').append('<img id="pdf" src="'+img+'" style="width:200px;height:200px;margin-top:4px;box-shadow:0px 0px 12px #7E7E7E;" >');
+	
+})
+$('#btnZoomIn').on('click', function(){
+	cropper.zoomIn();
+})
+$('#btnZoomOut').on('click', function(){
+	cropper.zoomOut();
+})
+//第二份编辑器
+
+$('#pdf01').on('change', function(){
+	var reader = new FileReader();
+		reader.onload = function(e) {
+		options.imgSrc = e.target.result;
+		cropper = $('#updateimg').cropbox(options);
+	}
+	reader.readAsDataURL(this.files[0]);
+	this.files = [];
+})
+
+$('#btnCrop01').on('click', function(){
+	var img = cropper.getDataURL();
+	$('.cropped02').html("");
+	$('.cropped02').append('<img id="pdf01" src="'+img+'" style="width:200px;height:200px;margin-top:4px;box-shadow:0px 0px 12px #7E7E7E;" >');
+})
+$('#btnZoomIn01').on('click', function(){
+	cropper.zoomIn();
+})
+$('#btnZoomOut01').on('click', function(){
+	cropper.zoomOut();
+})
+</script>

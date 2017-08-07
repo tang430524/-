@@ -1,0 +1,315 @@
+
+<table id="course_data"></table>  
+
+<div id="add_course" class="easyui-dialog" title="添加课程" data-options="iconCls:'icon-add',resizable:true,model:true,closed:true,fit:true">
+	<br />
+	<form id="courseForm" style="float:left;padding-left:20px;" enctype="multipart/form-data">
+		<div style="padding-left:50px;float:left;">
+			<label>课程类型：</label><select id="class_id" name="class_id"></select> <br /><br />
+			<label>课程标题：</label><input type="text" id="course_name" name="course_name" /> <br /><br />
+			<input type="hidden" id="user_id" name="user_id" value="1">
+			<label>课程作者：</label><input type="text" id="user_name" name="user_name"  value="xy" readonly/> <br /><br />
+			<label>课程标签：</label><input type="text" id="courseting" name="courseting" /> <br /><br />
+			<div><label >课程描述：</label></div><textarea id="course_description" name="course_description" Style="width:400px;height:200px;" rows="" cols=""></textarea><br /><br /><br /><br />	
+		</div>
+		<div class="container" style="float:right;margin-right: 100px;">
+		  	<div id="addimg" class="imageBox" style=" url(&quot;http://www.17sucai.com/preview/1/2015-03-19/%E4%B8%8A%E4%BC%A0%E6%88%AA%E5%9B%BE/images/avatar.jpg&quot;); background-size: 658px 851px; background-position: -129px -225.5px; background-repeat: no-repeat;"float:right;">
+		    <div class="thumbBox"></div>
+		    <div class="spinner" style="display: none;">Loading...</div>
+		  </div>
+			  <div class="action"> 
+			    <div class="new-contentarea tc"> <a href="javascript:void(0)" class="upload-img">
+			      <label for="coursephoto">上传头像</label>
+			      </a>
+			      <input type="file" name="coursephoto" id="coursephoto"/>
+			    </div>
+			    <input type="button" id="btnCrop" class="Btnsty_peyton" value="裁切">
+			    <input type="button" id="btnZoomIn" class="Btnsty_peyton" value="+">
+			    <input type="button" id="btnZoomOut" class="Btnsty_peyton" value="-">
+			  </div>
+	  		<div class="cropped"></div>
+		</div><br/><br/><br/><br/><br/><br/><br/>
+		<input type="button" style="width:200px;height:50px;mrgin-right:500px;" class="easyui-linkbutton" value="添加会员" onclick="addCourse()"/>&nbsp;&nbsp;&nbsp;
+	
+	</form>
+		
+</div>
+
+<div id="courseIntroduction" style="top:500px;left:500px;display:none;width: 500px;height: 500px;z-index: 1000px;">
+	<h2>我是简介</h2>
+</div>
+
+<script>
+
+//初始化加载课程的类型
+	$(function (){
+		$.post("getCategoryInformation.action",function(data){
+			var str="";
+			for(var i=0;i<data.length;i++){
+				str+="<option value='"+data[i].class_id+"'>"+data[i].class_categorys+"</option>";
+			}
+			$("#class_id").html(str);
+		},"json");
+	});
+
+	var obj=$('#course_data').datagrid({  
+	    url:'course/getAllcoursebypage.action',  
+		fitColumns:true,//true将自动扩展/收缩columns大小适应grid的宽度,防止水平滚动.
+		striped:true,//显示条纹所在行
+		loadMsg:"数据加载中...",//当从远程服务器加载数据的时候,显示的提示消息.
+		pagination:true,//分页
+		fit:true,//满屏
+		pageNumber:1,//初始页码
+		pageSize:5,//分页大小
+		pageList:[5,10,20,30,40,50],//设置属性
+		sortName:'course_id',//定义那个列可以排序
+		remoteSort:false,//定义是否远程排序.对数据库进行操作
+	    columns:[[ 
+			{field:'course_ids',title:'',width:40,align:'center',checkbox:true}, 
+			{field:'course_id',title:'课程编号',width:100,align:'center',},
+			{field:'lass_category.class_categorys',title:'课程类型',width:100,align:'center',
+				formatter: function(value,row,index){
+        			if(row.lass_category.class_categorys){
+        				return row.lass_category.class_categorys;
+        			}else{
+        				return value;
+        			}
+				}
+			},  
+	        {field:'course_name',title:'课程标题',width:80,align:'center'},
+	        {field:'userInfo.user_id',title:'用户编号',width:100,align:'center',
+	        	formatter: function(value,row,index){
+        			if(row.userInfo.user_id){
+        				return row.userInfo.user_id;
+        			}else{
+        				return value;
+        			}
+				}
+			},
+	        {field:'userInfo.user_name',title:'课程创始人',width:100,align:'center',
+				formatter: function(value,row,index){
+        			if(row.userInfo.user_name){
+        				return row.userInfo.user_name;
+        			}else{
+        				return value;
+        			}
+				}
+			},
+	        {field:'course_view',title:'浏览次数',width:60,align:'center'},
+	        {field:'coursephoto',title:'课程图片',width:100,align:'center',
+	        	formatter: function(value,row,index){
+					if(value!=null){
+						return "<img src='"+value+"' style='width='60px' height='60px'/>";
+					}else{
+						return;
+					}
+				}
+	        },
+	        {field:'course_description',title:'课程简介', width:100,align:'center',
+	        	formatter: function(value,rowData,index){
+						return "<a href='javascript:show("+value+")'>详细</a>";
+				}
+			},
+	        {field:'status',title:'课程状态', width:100,align:'center',
+				formatter: function(value,row,index){
+					if(value==0){
+						return "未审核";
+					}else if(value==1){
+						return "审核通过";
+					}
+				}
+	        }
+	    ]],
+	    toolbar:[{
+			text:"添加",
+			iconCls:"icon-add",
+			handler:function(){
+				$('#add_course').dialog('open'); 
+				$("#course_date").datebox('setValue',myformatter(new Date()));
+			}
+		},{
+			text:"修改",
+			iconCls:"icon-edit",
+			handler:function(){
+				var rows=$('#course_data').datagrid("getChecked")[0];
+				if(rows!=undefined){
+					 var nid=rows.nid;
+					 console.info(nid);
+					$('#edit_news').dialog('open');
+					$("#enews_nid").val(nid);
+					$("#enews_date").datebox('setValue',myformatter(new Date()));
+					$.post("../../newsInfoServlet",{op:"findAllNewsByNid",nid:nid},function(data){
+						$.each(data.rows,function(index,item){
+							$("#enews_title").val(item.title);
+							$("#enews_author").val(item.author);
+							$("#enews_mdate").datebox('setValue',item.mdate);
+							$("#enews_weight").val(item.weight);
+							ue2.setContent(item.ncontent);
+						});
+					},"json");	
+				}else{
+					$.messager.show({
+						title:'成功提示',
+						msg:'请选中您要修改的数据...',
+						timeout:2000,
+						showType:'slide'
+					});
+				}
+				
+			}
+		},{
+			text:"删除",
+			iconCls:"icon-remove",
+			handler:function(){
+				var rows=$('#course_data').datagrid("getChecked");
+				alert(rows);
+				if(rows!=null  && rows!=""){
+					 $.messager.confirm('信息确认','您确认要删除选定的数据吗？',function(rs){
+							if(rs){
+								if(rows.length==1){
+									var course_id=rows[0].course_id;
+									$.post("course/delCourse.action",{course_id:course_id},function(data){
+										if(data>0){
+											$.messager.show({
+												title:'成功提示',
+												msg:'会员删除成功',
+												timeout:2000,
+												showType:'slide'
+											});
+											rows=null;
+											$('#course_data').datagrid("reload");//刷新表格
+										}else{	
+											$.messager.alert('失败提示','课程删除失败','error');
+										}
+									});
+								}else{
+									var course_ids="";
+									for(var i=0;i<rows.length;i++){
+										course_ids+=rows[i].course_id+",";
+									}
+									//发请求到数据库删除
+									$.post("course/delCourses",{course_ids:course_ids},function(data){
+										if(data>0){
+											$.messager.show({
+												title:'成功提示',
+												msg:'会员删除成功',
+												timeout:2000,
+												showType:'slide'
+											});
+											rows=null;
+											$('#course_data').datagrid("reload");//刷新表格
+										}else{	
+											$.messager.alert('失败提示','课程删除失败','error');
+										}
+									});
+								}
+							}else{
+								return;
+							}
+						});
+				}else{
+					$.messager.show({
+						title:'成功提示',
+						msg:'请选中您要删除的数据...',
+						timeout:2000,
+						showType:'slide'
+					});  
+				}
+			}
+		},{
+			text:"多条件查询",
+			iconCls:"icon-add",
+			handler:function(){
+				$("#select_news").dialog('open'); 
+				$("#stitle").val("");
+				$("#stype").val("");
+				$("#sauthor").val("");
+				$("#scontent").val("");
+				$("#stime").val("");
+			}
+		}
+	    ]
+	});
+	function show(content){
+		$("#courseIntroduction").css("display","block");
+		Str="";
+		str+='<p>';
+		str+=content;
+		str+='</p>';
+		$("#courseIntroduction").html(str);
+	}
+	function showInfo(){
+		var nid=$.trim($("#enews_nid").val());
+		$.post("../../newsInfoServlet",{op:"findAllNewsByNid",nid:nid},function(data){
+				$.each(data.rows,function(index,item){
+					$("#enews_title").val(item.title);
+					$("#enews_author").val(item.author);
+					$("#enews_mdate").datebox('setValue',item.mdate);
+					$("#enews_weight").val(item.weight);
+					ue2.setContent(item.ncontent);
+				});
+		},"json");
+	}
+	
+	function myformatter(date){
+		console.info(date);
+		var y=date.getFullYear();
+		var m=date.getMonth()+1;
+		var d=date.getDate();
+		return y+"-"+(m<10?('0'+m):m) +"-"+( d<10?('0'+m):m) +"-"+( d<10?('0'+d):d);
+	}
+	function addCourse(){
+		var formData = new FormData($( "#courseForm" )[0]);
+		$.ajax({
+			 	url:"course/addCourse.action",
+			 	data:formData,
+			 	type: 'POST',
+			 	dataType:"json",
+			 	async: false,  
+		        cache: false,  
+		        contentType: false,  
+		        processData: false,  
+			 	success:function(data,status){
+				 	if(data){
+				 		$.messager.show({title:'成功提示',msg:"课程添加成功...",timeout:2000,showType:'slide'});
+						$('.cropped').html("");
+						obj.datagrid('reload');
+						$('#add_course').dialog('close');
+				 	}else{
+				 		$.messager.show({title:'成功提示',msg:"课程添加失败...",timeout:2000,showType:'slide'});
+				 	}
+			 	}
+	   	});
+	}
+	//上传头像的js
+	var options =
+	{
+		thumbBox: '.thumbBox',
+		spinner: '.spinner',
+		imgSrc: 'images/avatar.jpg'
+	}
+	var cropper = $('.imageBox').cropbox(options);
+	$('#coursephoto').on('change', function(){
+		console.info("yes");
+		var reader = new FileReader();
+		reader.onload = function(e) {
+			options.imgSrc = e.target.result;
+			cropper = $('.imageBox').cropbox(options);
+		}
+		reader.readAsDataURL(this.files[0]);
+		this.files = [];
+	})
+
+	$('#btnCrop').on('click', function(){
+		var img = cropper.getDataURL();
+		$('.cropped').html('');
+		
+		$('.cropped').append('<img  id="uploadhead" src="'+img+'" style="width:360px;height:270px;margin-top:4px;box-shadow:0px 0px 12px #7E7E7E;">');
+	})
+	$('#btnZoomIn').on('click', function(){
+		cropper.zoomIn();
+	})
+	$('#btnZoomOut').on('click', function(){
+		cropper.zoomOut();
+	})
+</script>
